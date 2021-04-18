@@ -33,9 +33,21 @@ function expect_status() {
     fi
 }
 
+function expect_post() {
+      # Args
+    path=$1
+    expect=$2
+    curl --silent -i -d 'name=admin&shoesize=12' ${URLbase}/${path} >/tmp/,$$
+    if grep -q ${expect} /tmp/,$$ ; then
+	echo "Pass --  found ${expect} in ${URLbase}/${path} "
+    else
+        echo "*** FAIL *** expecting status ${expect} in ${URLbase}/${path} "
+    fi
+}
 
 expect_body trivia.html  "Seriously"
 expect_status nosuch.html "404"
-expect_status there/theybe.html 404
+expect_status there/theybe.html "404"
 expect_status there//theybe.html "403"
 expect_status there.xxx "403"
+expect_post trivia.html "401"
