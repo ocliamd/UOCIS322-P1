@@ -92,10 +92,20 @@ def respond(sock):
     parts = request.split()
     if len(parts) > 1 and parts[0] == "GET":
         filename = './pages' + parts[1]
-        with open(filename, 'r') as file:
-            transmit(STATUS_OK, sock)
-            transmit(file.read(), sock)
-        file.close()
+        if ('//' in parts[1]) or ('~' in parts[1]) or ('..' in parts[1]) or ('.html' not in parts[1]):
+            log.info("Error 403: Forbidden error: {}".format(request))
+            transmit(STATUS_FORBIDDEN, sock)
+            transmit("\nError 403: Forbidden error: {}\n".format(request), sock)
+        else:
+            try:
+                file = open(filename, 'r')
+                transmit(STATUS_OK, sock)
+                transmit(file.read(), sock)
+                file.close()
+            except:
+                log.info("Error 404: File Not Found: {}".format(request))
+                transmit(STATUS_NOT_FOUND, sock)
+                transmit("\nError 404: File Not Found: {}\n".format(request), sock)
     else:
         log.info("Unhandled request: {}".format(request))
         transmit(STATUS_NOT_IMPLEMENTED, sock)
