@@ -91,8 +91,11 @@ def respond(sock):
 
     parts = request.split()
     if len(parts) > 1 and parts[0] == "GET":
-        transmit(STATUS_OK, sock)
-        transmit(CAT, sock)
+        filename = './pages' + parts[1]
+        with open(filename, 'r') as file:
+            transmit(STATUS_OK, sock)
+            transmit(file.read(), sock)
+        file.close()
     else:
         log.info("Unhandled request: {}".format(request))
         transmit(STATUS_NOT_IMPLEMENTED, sock)
