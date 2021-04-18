@@ -42,11 +42,12 @@ def listen(portnum):
     return serversocket
 
 
-def serve(sock, func):
+def serve(sock, path, func):
     """
     Respond to connections on sock.
     Args:
        sock:  A server socket, already listening on some port.
+       path: path to pages defined in credentials.ini
        func:  a function that takes a client socket and does something with it
     Returns: nothing
     Effects:
@@ -56,7 +57,7 @@ def serve(sock, func):
     while True:
         log.info("Attempting to accept a connection on {}".format(sock))
         (clientsocket, address) = sock.accept()
-        _thread.start_new_thread(func, (clientsocket,))
+        _thread.start_new_thread(func, (clientsocket, path,))
 
 
 ##
@@ -78,7 +79,7 @@ STATUS_NOT_FOUND = "HTTP/1.0 404 Not Found\n\n"
 STATUS_NOT_IMPLEMENTED = "HTTP/1.0 401 Not Implemented\n\n"
 
 
-def respond(sock):
+def respond(sock, path):
     """
     This server responds only to GET requests (not PUT, POST, or UPDATE).
     Any valid GET request is answered with an ascii graphic of a cat.
@@ -91,7 +92,7 @@ def respond(sock):
 
     parts = request.split()
     if len(parts) > 1 and parts[0] == "GET":
-        filename = './pages' + parts[1]
+        filename = path + parts[1]
         if ('//' in parts[1]) or ('~' in parts[1]) or ('..' in parts[1]):
             log.info("Error 403: Forbidden error: {}".format(request))
             transmit(STATUS_FORBIDDEN, sock)
@@ -156,12 +157,14 @@ def get_options():
 def main():
     options = get_options()
     port = options.PORT
+    path = options.DOCROOT
     if options.DEBUG:
         log.setLevel(logging.DEBUG)
     sock = listen(port)
     log.info("Listening on port {}".format(port))
     log.info("Socket is {}".format(sock))
-    serve(sock, respond)
+    log.info("DOCROOT is {}".format(path))
+    serve(sock, path, respond)
 
 
 if __name__ == "__main__":
