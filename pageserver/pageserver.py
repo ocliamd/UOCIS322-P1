@@ -111,12 +111,12 @@ def respond(sock):
                     transmit("\nError 404: "
                              "File Not Found: {}\n".format(request), sock)
             else:
-                # .html or .css extersion not used
+                # .html or .css extension not used
                 log.info("Error ***403: Forbidden error: {}".format(request))
                 transmit(STATUS_FORBIDDEN, sock)
                 transmit("\nError 403: Forbidden error: {}\n".format(request),
                          sock)
-    else:   #only GET requests are supported on this server
+    else:   # only GET requests are supported on this server
         log.info("Unhandled request: {}".format(request))
         transmit(STATUS_NOT_IMPLEMENTED, sock)
         transmit("\nI don't handle this request: {}\n".format(request), sock)
