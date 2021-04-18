@@ -6,9 +6,7 @@
   error handling and many other things to keep the illustration as simple
   as possible.
 
-  FIXME:
-  Currently this program always serves an ascii graphic of a cat.
-  Change it to serve files if they end with .html or .css, and are
+  Currently this program serves files if they end with .html or .css, and are
   located in ./pages  (where '.' is the directory from which this
   program is run).
 """
@@ -89,30 +87,36 @@ def respond(sock):
     log.info("--- Received request ----")
     log.info("Request was {}\n***\n".format(request))
     options = get_options()
-    path = options.DOCROOT
+    path = options.DOCROOT      #path points to DOCROOT in credential.ini
     parts = request.split()
     if len(parts) > 1 and parts[0] == "GET":
-        filename = path + parts[1]
+        filename = path + parts[1]  #filename of requested page
         if ('//' in parts[1]) or ('~' in parts[1]) or ('..' in parts[1]):
+            # check for forbidden characters
             log.info("Error 403: Forbidden error: {}".format(request))
             transmit(STATUS_FORBIDDEN, sock)
             transmit("\nError 403: Forbidden error: {}\n".format(request), sock)
         else:
             if ('.html' in parts[1]) or ('.css' in parts[1]):
+                # check for correct extension
                 try:
-                    file = open(filename, 'r')
+                    file = open(filename, 'r')  # open requested page
                     transmit(STATUS_OK, sock)
-                    transmit(file.read(), sock)
-                    file.close()
+                    transmit(file.read(), sock)  # transmit contents of page
+                    file.close()                # don't forget to close file
                 except:
+                    # requested page not found
                     log.info("Error 404: File Not Found: {}".format(request))
                     transmit(STATUS_NOT_FOUND, sock)
-                    transmit("\nError 404: File Not Found: {}\n".format(request), sock)
+                    transmit("\nError 404: "
+                             "File Not Found: {}\n".format(request), sock)
             else:
+                # .html or .css extersion not used
                 log.info("Error ***403: Forbidden error: {}".format(request))
                 transmit(STATUS_FORBIDDEN, sock)
-                transmit("\nError 403: Forbidden error: {}\n".format(request), sock)
-    else:
+                transmit("\nError 403: Forbidden error: {}\n".format(request),
+                         sock)
+    else:   #only GET requests are supported on this server
         log.info("Unhandled request: {}".format(request))
         transmit(STATUS_NOT_IMPLEMENTED, sock)
         transmit("\nI don't handle this request: {}\n".format(request), sock)
